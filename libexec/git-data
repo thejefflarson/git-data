@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -e
+[ -n "$GD_DEBUG" ] && set -x
+
+# This is the main file for git-data it handles dispatch and was largely
+# lifted from rbenv.
+
+# setup path, easiest to do it in perl
+bin_path=$( dirname `perl -MCwd=realpath -e "print realpath '$0'"` )
+export PATH="${PATH}:${bin_path}"
+
+command=$1
+case $command in
+  "" | "help")
+    echo "$(gitdata-help $2)" >&2
+    ;;
+  *)
+    command_name=$( command -v "gitdata-$command" )
+    if [ -z command_name ]
+    then
+      echo "git data: bad command $command_name" >&2
+      exit 1
+    fi
+
+    shift 1 # get rid of our command
+    exec "$command_name" "$@" # exec command
+    ;;
+esac

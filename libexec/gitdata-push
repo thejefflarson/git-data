@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -e
+[ -n "$GD_DEBUG" ] && set -x
+
+# Ensure we have the required arguments
+glob=$1
+remote=$2
+if [ -z $glob ] && [ -z $remote ]
+then
+  echo "usage: git data push <glob> <remote file>"
+  exit 1
+fi
+git_data="`pwd`/.git-data"
+gitignore="`pwd`/.gitignore"
+
+# Create a tarball of our glob
+tarball="git-data.tar.gz"
+tar czvf $tarball $glob
+sha=$(shasum $tarball | cut -f 1 -d ' ' -)
+
+
+# Return a file with the lines that match $glob filtered out
+filter_and_replace() {
+  local file=$1
+  local glob=$2
+
+  if [ ! -f $file ]
+  then
+    touch $file
+  fi
+
+  awk '($1 != "'$glob'") {print}' $file > $file".tmp"
+  mv $file".tmp" $file
+}
+
+
+# Filter out our glob
+if [ -e $git_data ]
+then
+  filter_and_replace $git_data $glob
+fi
+# Add it to .gitignore
+filter_and_replace $gitignore $glob
+
+echo -e "$glob\tremote\t$sha" >> $git_data
+echo -e "$glob" >> $gitignore
+
+git add $git_data
+
+
+

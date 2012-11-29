@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+set -e
+[ -n "$GD_DEBUG" ] && set -x
+
+# Various documentation of commands.
+
+case "$1" in
+"")
+echo "usage: git data <command>
+
+git data stores files that are too big to handle in git on remote servers.
+Think of it as a very simple git annex. It will include a .git-data
+file in the root of your repo that contains information about where each file
+is stored.
+
+Commands
+  store   store data to s3 or a fileserver you have access to
+  sync    download and synchronize the data from the remote servers
+  gc      cleanup all old versions of data on the remote severs to reclaim space
+
+Use 'git help <command>' to read more about each command.
+"
+;;
+store)
+echo "usage: git data store <file> <remote-path>
+
+Store a big file, or collection of files if <file> is a glob, to the
+<remote-path>.
+
+Arguments
+  file          the file(s) to be stored.
+  remote-path   the remote path to store the file. This argument should take the
+                form of:
+                  s3://bucket/directory/path
+                  or
+                  user@servername.org:/directory/path
+
+  If you are storing on s3 you must have the AWS_SECRET_ACCESS_KEY and
+  AWS_ACCESS_KEY_ID environment variables set.
+"
+;;
+gc)
+echo "usage: git data gc
+
+Remove files on the server that aren't represented in .git-data
+"
+;;
+sync)
+echo "usage: git data sync
+
+Retrieve each file stored on the remote and restore it in the current directory.
+"
+;;
+*)
+echo "unknown command"
+esac
