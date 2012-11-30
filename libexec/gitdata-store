@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+set -e
+[ -n "$GD_DEBUG" ] && set -x
+. gitdata-functions
+
+send_file() {
+  local remote=$1
+  local files=$2
+  local sha=$3
+  local server=$(echo $remote | cut -f 1 -d ":" - )
+  local path=$(echo $remote | cut -f 2 -d ":" - )
+
+  # create directory
+  echo "creating directory at $path on $remote"
+  ssh $server "mkdir -p $path"
+
+  # Upload file
+  echo "sending $files to $remote/$(file_name $sha)"
+  rsync -z --progress $files $remote/"$(file_name $sha)"
+}
+
+# Ensure we have the required arguments
+glob=$1
+remote=$(get_remote $2)
+if [ -z $glob ]
+then
+  echo "usage: git data store [glob] <name>"
+  exit 1
+fi
+
+gitignore="`pwd`/.gitignore"
+
+# Create a tarball of our glob
+tar czvf $tarball $glob
+sha=$(shasum $tarball | cut -f 1 -d ' ' -)
+
+if [[ $remote =~ ^s3:\/\/ ]]
+then
+  send_s3_file $remote $tarball $sha
+  echo "sending to s3"
+else
+  send_file $remote $tarball $sha
+  echo "sending to server"
+fi
+
+rm $tarball
+
+# Return a file with the lines that match $glob filtered out
+filter_and_replace() {
+  local file=$1
+  local glob=$2
+
+  if [ ! -f $file ]
+  then
+    touch $file
+  fi
+
+  awk '($1 != "'$glob'") {print}' $file > $file".tmp"
+  mv $file".tmp" $file
+}
+
+# Filter out our glob
+if [ -e $git_data ]
+then
+  filter_and_replace $git_data $glob
+fi
+# Add it to .gitignore
+filter_and_replace $gitignore $glob
+
+echo -e "$glob\t$sha" >> $git_data
+echo -e "$glob" >> $gitignore
+
+git add $git_data

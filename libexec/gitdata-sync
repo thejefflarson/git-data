@@ -1,3 +1,41 @@
 #!/usr/bin/env bash
 set -e
 [ -n "$GD_DEBUG" ] && set -x
+. gitdata-functions
+
+get_file() {
+  local remote=$1
+  local files=$2
+  local sha=$3
+
+  echo "receiving $files from $remote/$(file_name $sha)"
+  rsync -z --progress $remote/"$(file_name $sha)" $tarball
+}
+
+grab_s3_file() {
+  echo "downloading from s3"
+}
+
+remote=$(get_remote $2)
+
+cat $git_data | while read line
+do
+  file=$(echo "$line" | cut -f 1 -)
+  sha=$(echo "$line" | cut -f 2 -)
+
+  if [[ $remote =~ ^s3:\/\/ ]]
+  then
+    get_s3_file $remote $file $sha
+  else
+    get_file $remote $file $sha
+  fi
+
+  if [ "$sha" != "$(shasum $tarball | cut -f 1 -d ' ' -)" ]
+  then
+    echo "sha does not match $remote exiting"
+    exit 1
+  fi
+
+  tar xzvf $tarball
+  rm $tarball
+done

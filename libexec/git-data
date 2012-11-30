@@ -8,6 +8,7 @@ set -e
 # setup path, easiest to do it in perl
 bin_path=$( dirname `perl -MCwd=realpath -e "print realpath '$0'"` )
 export PATH="${PATH}:${bin_path}"
+export LOCAL_NAME="git-data.tar.gz"
 
 command=$1
 case $command in

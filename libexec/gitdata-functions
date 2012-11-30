@@ -1,0 +1,38 @@
+tarball="git-data.tar.gz"
+git_data="`pwd`/.git-data"
+
+get_remote() {
+  local key=$1
+
+  if [ -z $key ]
+  then
+    remote=$(git config --get git-data.origin.url)
+  else
+    remote=$(git config --get git-data.$key.url)
+  fi
+
+  if [ -z $remote ]
+  then
+    echo "you need to set at least one remote in git-data try: git data remote origin [server]"
+    exit 1
+  fi
+  echo "$remote"
+}
+
+set_remote() {
+  `git config git-data.$1.server $2`
+}
+
+file_name() {
+  local sha=$1
+  echo "git-data-$sha.tar.gz"
+}
+
+sign_request() {
+  echo "signing"
+}
+
+send_s3_file() {
+  echo "sending to s3"
+}
+
