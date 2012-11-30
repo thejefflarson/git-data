@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 tarball="git-data.tar.gz"
 git_data="`pwd`/.git-data"
 
