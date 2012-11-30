@@ -28,11 +28,12 @@ file_name() {
   echo "git-data-$sha.tar.gz"
 }
 
+# http://docs.amazonwebservices.com/AmazonS3/latest/dev/RESTAuthentication.html
 sign_request() {
+  local sign=$1
+  echo $sign | openssl dgst -sha256 -binary -hmac $AWS_SECRET_ACCESS_KEY | openssl base64
   echo "signing"
 }
 
-send_s3_file() {
-  echo "sending to s3"
-}
+
 

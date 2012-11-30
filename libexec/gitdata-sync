@@ -12,7 +12,7 @@ get_file() {
   rsync -z --progress $remote/"$(file_name $sha)" $tarball
 }
 
-grab_s3_file() {
+get_file_from_s3() {
   echo "downloading from s3"
 }
 

@@ -19,6 +19,10 @@ send_file() {
   rsync -z --progress $files $remote/"$(file_name $sha)"
 }
 
+send_file_to_s3() {
+
+}
+
 # Ensure we have the required arguments
 glob=$1
 remote=$(get_remote $2)
@@ -36,7 +40,7 @@ sha=$(shasum $tarball | cut -f 1 -d ' ' -)
 
 if [[ $remote =~ ^s3:\/\/ ]]
 then
-  send_s3_file $remote $tarball $sha
+  send_file_to_s3 $remote $tarball $sha
   echo "sending to s3"
 else
   send_file $remote $tarball $sha
