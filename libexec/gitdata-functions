@@ -33,9 +33,16 @@ file_name() {
 # http://docs.amazonwebservices.com/AmazonS3/latest/dev/RESTAuthentication.html
 sign_request() {
   local sign=$1
-  echo $sign | openssl dgst -sha256 -binary -hmac $AWS_SECRET_ACCESS_KEY | openssl base64
-  echo "signing"
+  if [ -z $AWS_SECRET_ACCESS_KEY ] && [ -z $AWS_ACCESS_KEY_ID ]
+  then
+    echo "You must set AWS_SECRET_ACCESS_KEY and AWS_ACCESS_KEY_ID to use s3 as an endpoint."
+    exit 1
+  fi
+  echo "$( echo -en $sign | openssl dgst -sha1 -binary -hmac $AWS_SECRET_ACCESS_KEY  | openssl base64 )"
 }
 
+http_date() {
+  echo $(LC_TIME=C TZ=utc date "+%a, %d %h %Y %T %z")
+}
 
 

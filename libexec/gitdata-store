@@ -19,8 +19,22 @@ send_file() {
   rsync -z --progress $files $remote/"$(file_name $sha)"
 }
 
-send_file_to_s3() {
+make_bucket() {
+  local bucket=$1
+  echo -e "PUT\n\n\n`http_date`\n/$bucket/"
+  local auth=$(sign_request "PUT\n\n\n`http_date`\n/$bucket/")
 
+  curl s3.amazonaws.com/ \
+       --header "Host: $bucket.s3.amazonaws.com" \
+       --header "Date: `http_date`" \
+       --header "Authorization: AWS $AWS_ACCESS_KEY_ID:$auth" \
+       -XPUT
+}
+
+send_file_to_s3() {
+  local url=$1
+  local bucket=$(echo $url | cut -f 3 -d '/' -)
+  make_bucket $bucket
 }
 
 # Ensure we have the required arguments
