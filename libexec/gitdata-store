@@ -48,6 +48,8 @@ send_file_to_s3() {
        --header "Authorization: AWS $AWS_ACCESS_KEY_ID:$auth" \
        -XPUT \
        -# \
+       --retry 3 \
+       -o $sha \
        -T $file
 }
 
@@ -65,7 +67,7 @@ gitignore="`pwd`/.gitignore"
 # Create a tarball of our glob
 tar czvf $tarball $glob
 sha=$(shasum $tarball | cut -f 1 -d ' ' -)
-echo $sha
+
 if [[ $remote =~ ^s3:\/\/ ]]
 then
   send_file_to_s3 $remote $tarball $sha
