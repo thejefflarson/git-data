@@ -13,7 +13,23 @@ get_file() {
 }
 
 get_file_from_s3() {
-  echo "downloading from s3"
+  local remote=$1
+  local files=$2
+  local sha=$3
+
+  echo "receiving $files from $remote$(file_name $sha)"
+
+  [[ $remote =~ s3:\/\/(.*) ]]
+  local path="${BASH_REMATCH[1]}"
+  local date=$(http_date)
+  local auth=$(sign_request "GET\n\n\n$date\n/$path$(file_name $sha)")
+
+  curl https://s3.amazonaws.com/$path$(file_name $sha) \
+       --header "Host: $bucket.s3.amazonaws.com" \
+       --header "Date: $date" \
+       --header "Content-Length: $( du $file | cut -f 1 - )" \
+       --header "Authorization: AWS $AWS_ACCESS_KEY_ID:$auth" \
+       -# > $tarball
 }
 
 remote=$(get_remote $2)
@@ -25,7 +41,7 @@ do
 
   if [[ $remote =~ ^s3:\/\/ ]]
   then
-    get_s3_file $remote $file $sha
+    get_file_from_s3 $remote $file $sha
   else
     get_file $remote $file $sha
   fi
