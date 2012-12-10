@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-tarball="git-data.tar.gz"
+tarball=$(mktemp git-data.tar.gz.XXXXXXXXX)
 git_data="`pwd`/.git-data"
 
 get_remote() {
