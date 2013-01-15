@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+set -e
+[ -n "$GD_DEBUG" ] && set -x
 
 tarball="git-data.tar.gz"
 git_data="`pwd`/.git-data"
