@@ -2,7 +2,7 @@
 set -e
 [ -n "$GD_DEBUG" ] && set -x
 
-tarball="git-data.tar.gz"
+tarball=$(mktemp git-data.tar.gz.XXXXXXXXX)
 git_data="`pwd`/.git-data"
 
 get_remote() {
