@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -e
 [ -n "$GD_DEBUG" ] && set -x
+set -o nounset
+set -o errtrace
+set -o errexit
+set -o pipefail
 
 tarball=$(mktemp git-data.tar.gz.XXXXXXXXX)
 git_data="`pwd`/.git-data"
