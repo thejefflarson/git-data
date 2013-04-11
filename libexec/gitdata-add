@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+. gitdata-functions
+
+filter_and_replace() {
+  local file=$1
+  local glob=$2
+
+  if [ ! -f $file ]
+  then
+    touch $file
+  fi
+
+  awk '($1 != "'$glob'") {print}' $file > $file".tmp"
+  mv $file".tmp" $file
+}
+
+attrs=$(attributes)
+while (( "$#" ))
+do
+  echo $1
+  filter_and_replace $attrs $1
+  echo -e "$1\tfilter=data\t-crlf" >> $attrs
+  git add $1
+  shift
+done
+

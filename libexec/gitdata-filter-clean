@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+. gitdata-functions
+
+tmp=$(tmpfile)
+cat >> $tmp
+sha=$(sha1sum $tmp | cut -f 1 -d ' ' -)
+mv $tmp $(object_dir)/$sha
+echo -e "git-data\t$sha"

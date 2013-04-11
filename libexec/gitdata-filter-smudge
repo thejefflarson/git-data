@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+. gitdata-functions
+
+sha=$(cut -f2 -)
+if [ -z $(get_remote) ]
+then
+  echo -e "git-data\t$sha"
+else
+  get $sha
+fi
