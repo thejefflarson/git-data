@@ -1,11 +1,18 @@
 #!/usr/bin/env bash
 . gitdata-functions
 
+if [ -z $(get_remote) ]
+then
+ echo "You need to set at least a remote for git-data try: git config git-data.origin.url <server>" >&2
+ exit 1
+fi
+
 # Grab any unexpanded git-data files
 for file in `git ls-files`
 do
   if [ "$(head -c 8 $file)" = 'git-data' ]
   then
+    echo "grabbing $file"
     get $(cut -f2 $file) $2 > $file
   fi
 done
@@ -13,7 +20,11 @@ done
 # Send and remove stuff in the queue
 for file in `ls $(object_dir)`
 do
-  path=$(object_dir)/$file
-  put $file $2
+  if [ "$(head -c 8 $file)" != 'git-data' ]
+  then
+    path=$(object_dir)/$file
+    echo "storing $file"
+    put $file $2
+  fi
   rm $path
 done

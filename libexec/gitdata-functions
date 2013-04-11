@@ -6,21 +6,7 @@ set -o errexit
 set -o pipefail
 
 get_remote() {
-  local key=$1
-
-  if [ -z $key ]
-  then
-    remote=$(git config --get git-data.origin.url)
-  else
-    remote=$(git config --get git-data.$key.url)
-  fi
-
-  if [ -z $remote ]
-  then
-    echo "you need to set at least one remote in git-data try: git config git-data.<remote>.url <server>"
-    exit 1
-  fi
-  echo "$remote"
+  echo $(git config --get git-data.origin.url)
 }
 
 file_name() {
@@ -68,7 +54,6 @@ get_file() {
   local remote=$1
   local sha=$2
 
-  echo "receiving $sha from $remote/$(file_name $sha)"
   rsync -z --progress $remote/"$(file_name $sha)"
 }
 
@@ -76,7 +61,6 @@ get_file_from_s3() {
   local remote=$1
   local sha=$2
 
-  echo "receiving $sha from $remote$(file_name $sha)" >&2
 
   [[ $remote =~ s3:\/\/(.*) ]]
   local path="${BASH_REMATCH[1]}"
@@ -112,12 +96,8 @@ send_file() {
   local server=$(echo $remote | cut -f 1 -d ":" - )
   local path=$(echo $remote | cut -f 2 -d ":" - )
 
-  # create directory
-  echo "creating directory at $path on $remote" >&2
   ssh $server "mkdir -p $path"
 
-  # Upload file
-  echo "sending $sha to $remote/$(file_name $sha)" >&2
   rsync -z --progress $(object_dir)$sha $remote/"$(file_name $sha)"
 }
 
