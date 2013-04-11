@@ -20,9 +20,9 @@ done
 # Send and remove stuff in the queue
 for file in `ls $(object_dir)`
 do
-  if [ "$(head -c 8 $file)" != 'git-data' ]
+  path=$(object_dir)/$file
+  if [ "$(head -c 8 $path)" != 'git-data' ]
   then
-    path=$(object_dir)/$file
     echo "storing $file"
     put $file $2
   fi
