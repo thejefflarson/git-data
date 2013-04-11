@@ -1,56 +1,19 @@
 #!/usr/bin/env bash
-set -e
-[ -n "$GD_DEBUG" ] && set -x
 . gitdata-functions
 
-get_file() {
-  local remote=$1
-  local files=$2
-  local sha=$3
-
-  echo "receiving $files from $remote/$(file_name $sha)"
-  rsync -z --progress $remote/"$(file_name $sha)" $tarball
-}
-
-get_file_from_s3() {
-  local remote=$1
-  local files=$2
-  local sha=$3
-
-  echo "receiving $files from $remote$(file_name $sha)"
-
-  [[ $remote =~ s3:\/\/(.*) ]]
-  local path="${BASH_REMATCH[1]}"
-  local date=$(http_date)
-  local auth=$(sign_request "GET\n\n\n$date\n/$path$(file_name $sha)")
-
-  curl https://s3.amazonaws.com/$path$(file_name $sha) \
-       --header "Host: $bucket.s3.amazonaws.com" \
-       --header "Date: $date" \
-       --header "Authorization: AWS $AWS_ACCESS_KEY_ID:$auth" \
-       > $tarball
-}
-
-remote=$(get_remote $2)
-
-cat $git_data | while read line
+# Grab any unexpanded git-data files
+for file in `git ls-files`
 do
-  file=$(echo "$line" | cut -f 1 -)
-  sha=$(echo "$line" | cut -f 2 -)
-
-  if [[ $remote =~ ^s3:\/\/ ]]
+  if [ "$(head -c 8 $file)" = 'git-data' ]
   then
-    get_file_from_s3 $remote $file $sha
-  else
-    get_file $remote $file $sha
+    get $(cut -f2 $file) $2 > $file
   fi
+done
 
-  if [ "$sha" != "$(shasum $tarball | cut -f 1 -d ' ' -)" ]
-  then
-    echo "sha does not match $remote exiting"
-    exit 1
-  fi
-
-  tar xzvf $tarball
-  rm $tarball
+# Send and remove stuff in the queue
+for file in `ls $(object_dir)`
+do
+  path=$(object_dir)/$file
+  put $file $2
+  rm $path
 done

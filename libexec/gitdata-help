@@ -9,33 +9,22 @@ case "$1" in
 echo "usage: git data [command]
 
 git data stores files that are too big to handle in git on remote servers.
-Think of it as a very simple git annex. It will include a .git-data
-file in the root of your repo that contains information about where each file
-is stored.
+Think of it as a very simple git annex.
 
 Commands
-  store   store data to s3 or a fileserver you have access to
-  sync    download and synchronize the data from the remote servers
-  gc      cleanup all old versions of data on the remote severs to reclaim space
+  add   store data to s3 or a fileserver you have access to
+  sync  download and synchronize the data from the remote servers
 
 Use 'git help [command]' to read more about each command.
 "
 ;;
-store)
-echo "usage: git data store [file] <name>
+add)
+echo "usage: git data add [file]
 
-Store a big file, or collection of files if [file] is a glob, to the
-server called <name> in .git/config.
+Stage a big file, or collection of files if [file] is a glob.
 
 Arguments
-  file   the file(s) to be stored.
-  name   (optional) the name of the server to store the data
-"
-;;
-gc)
-echo "usage: git data gc
-
-Remove files on the server that aren't represented in .git-data
+  file  the file(s) to be stored.
 "
 ;;
 sync)
@@ -44,23 +33,9 @@ echo "usage: git data sync <name>
 Retrieve each file stored on the remote and restore it in the current directory.
 
 Arguments
-  name   (optional) the name of the server to store the data
-"
-;;
-remote)
-echo "usage: git data remote [name] [server]
-
-name    a name for this server
-server  the remote path to store the file. This argument should take the
-        form of:
-          s3://bucket/directory/path
-          or
-          user@servername.org:/directory/path
-
-If you are storing on s3 you must have the AWS_SECRET_ACCESS_KEY and
-AWS_ACCESS_KEY_ID environment variables set.
+  name  (optional) the name in .git/config of the server to store the data
 "
 ;;
 *)
-echo "unknown command"
+echo "unknown command try git data help"
 esac

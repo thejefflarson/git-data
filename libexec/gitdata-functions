@@ -1,13 +1,9 @@
 #!/usr/bin/env bash
 set -e
 [ -n "$GD_DEBUG" ] && set -x
-set -o nounset
 set -o errtrace
 set -o errexit
 set -o pipefail
-
-tarball=$(mktemp git-data.tar.gz.XXXXXXXXX)
-git_data="`pwd`/.git-data"
 
 get_remote() {
   local key=$1
@@ -21,19 +17,15 @@ get_remote() {
 
   if [ -z $remote ]
   then
-    echo "you need to set at least one remote in git-data try: git data remote origin [server]"
+    echo "you need to set at least one remote in git-data try: git config git-data.<remote>.url <server>"
     exit 1
   fi
   echo "$remote"
 }
 
-set_remote() {
-  `git config git-data.$1.server $2`
-}
-
 file_name() {
   local sha=$1
-  echo "git-data-$sha.tar.gz"
+  echo "git-data-$sha"
 }
 
 # http://docs.amazonwebservices.com/AmazonS3/latest/dev/RESTAuthentication.html
@@ -47,8 +39,127 @@ sign_request() {
   echo "$( echo -en $sign | openssl dgst -sha1 -binary -hmac $AWS_SECRET_ACCESS_KEY  | openssl base64 )"
 }
 
+tmpfile(){
+  echo $(mktemp git-data.XXXXXXXXX)
+}
+
 http_date() {
   echo $(LC_TIME=C TZ=utc date "+%a, %d %h %Y %T %z")
 }
 
+git_dir(){
+  echo $(git rev-parse --git-dir)
+}
 
+root_dir(){
+  echo $(git rev-parse --show-toplevel)
+}
+
+object_dir(){
+  echo $(root_dir)/$(git_dir)/git-data/
+}
+
+attributes(){
+  echo $(root_dir)/.gitattributes
+}
+
+
+get_file() {
+  local remote=$1
+  local sha=$2
+
+  echo "receiving $sha from $remote/$(file_name $sha)"
+  rsync -z --progress $remote/"$(file_name $sha)"
+}
+
+get_file_from_s3() {
+  local remote=$1
+  local sha=$2
+
+  echo "receiving $sha from $remote$(file_name $sha)" >&2
+
+  [[ $remote =~ s3:\/\/(.*) ]]
+  local path="${BASH_REMATCH[1]}"
+  local date=$(http_date)
+  local auth=$(sign_request "GET\n\n\n$date\n/$path$(file_name $sha)")
+
+  curl https://s3.amazonaws.com/$path$(file_name $sha) \
+       --header "Host: $bucket.s3.amazonaws.com" \
+       --header "Date: $date" \
+       --header "Authorization: AWS $AWS_ACCESS_KEY_ID:$auth"
+}
+
+get(){
+  local sha=$1
+  local remote=$(get_remote $2)
+
+  if [ -e $(object_dir)/$sha ]
+  then
+    cat $(object_dir)/$sha
+  else
+    if [[ $remote =~ ^s3:\/\/ ]]
+    then
+      get_file_from_s3 $remote $sha
+    else
+      get_file $remote $sha
+    fi
+  fi
+}
+
+send_file() {
+  local remote=$1
+  local sha=$2
+  local server=$(echo $remote | cut -f 1 -d ":" - )
+  local path=$(echo $remote | cut -f 2 -d ":" - )
+
+  # create directory
+  echo "creating directory at $path on $remote" >&2
+  ssh $server "mkdir -p $path"
+
+  # Upload file
+  echo "sending $sha to $remote/$(file_name $sha)" >&2
+  rsync -z --progress $(object_dir)$sha $remote/"$(file_name $sha)"
+}
+
+make_bucket() {
+  local bucket=$1
+  local date=$(http_date)
+  local auth=$(sign_request "PUT\n\n\n$date\n/$bucket/")
+
+  curl https://s3.amazonaws.com/ \
+       --header "Host: $bucket.s3.amazonaws.com" \
+       --header "Date: $date" \
+       --header "Authorization: AWS $AWS_ACCESS_KEY_ID:$auth" \
+       -XPUT
+}
+
+send_file_to_s3() {
+  local url=$1
+  local sha=$2
+  local bucket=$(echo $url | cut -f 3 -d '/' -)
+  make_bucket $bucket
+  [[ $url =~ s3:\/\/$bucket/(.*) ]]
+  local path="${BASH_REMATCH[1]}"
+  local date=$(http_date)
+
+  local auth=$(sign_request "PUT\n\n\n$date\n/$bucket/$path$(file_name $sha)")
+  curl https://s3.amazonaws.com/$path$(file_name $sha) \
+       --header "Host: $bucket.s3.amazonaws.com" \
+       --header "Date: $date" \
+       --header "Authorization: AWS $AWS_ACCESS_KEY_ID:$auth" \
+       -XPUT \
+       --retry 3 \
+       -T $(object_dir)$sha
+}
+
+put() {
+  local sha=$1
+  local remote=$(get_remote $2)
+
+  if [[ $remote =~ ^s3:\/\/ ]]
+  then
+    send_file_to_s3 $remote $sha
+  else
+    send_file $remote $sha
+  fi
+}
