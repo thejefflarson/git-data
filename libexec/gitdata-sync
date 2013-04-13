@@ -13,7 +13,7 @@ do
   if [ "$(head -c 8 $file)" = 'git-data' ]
   then
     echo "grabbing $file"
-    get $(cut -f2 $file) $2 > $file
+    cat $file | git data filter-smudge > $file
   fi
 done
 
