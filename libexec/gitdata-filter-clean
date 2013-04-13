@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 . gitdata-functions
 
-if [ "$(head -c 8 $path)" != 'git-data' ]
+tmp=$(tmpfile)
+cat >> $tmp
+
+if [ "$(head -c 8 $tmp)" != 'git-data' ]
 then
-  tmp=$(tmpfile)
-  cat >> $tmp
   sha=$(shasum $tmp | cut -f 1 -d ' ' -)
   mv $tmp $(object_dir)/$sha
   echo -e "git-data\t$sha"
 else
-  cat
+  cat $tmp
+  rm $tmp
 fi
