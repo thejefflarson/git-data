@@ -70,7 +70,8 @@ get_file_from_s3() {
   curl https://s3.amazonaws.com/$path$(file_name $sha) \
        --header "Host: $bucket.s3.amazonaws.com" \
        --header "Date: $date" \
-       --header "Authorization: AWS $AWS_ACCESS_KEY_ID:$auth"
+       --header "Authorization: AWS $AWS_ACCESS_KEY_ID:$auth" \
+       -#
 }
 
 get(){

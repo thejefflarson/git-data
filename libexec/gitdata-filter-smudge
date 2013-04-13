@@ -4,7 +4,7 @@
 sha=$(cut -f2 -)
 if [ -z $(get_remote) ]
 then
-  echo -e "git-data\t$sha"
+  exit 1
 else
   get $sha
 fi
