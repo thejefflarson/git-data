@@ -6,7 +6,7 @@ cat >> $tmp
 
 if [ "$(head -c 8 $tmp)" != 'git-data' ]
 then
-  sha=$(shasum $tmp | cut -f 1 -d ' ' -)
+  sha=$(git hash-object $tmp)
   mv $tmp $(object_dir)/$sha
   echo -e "git-data\t$sha"
 else
