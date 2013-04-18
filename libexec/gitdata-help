@@ -14,6 +14,7 @@ Think of it as a very simple git annex.
 Commands
   add   store data to s3 or a fileserver you have access to
   sync  download and synchronize the data from the remote servers
+  init  you'll want to run this first to set up the room
 
 Use 'git help [command]' to read more about each command.
 "
@@ -34,6 +35,24 @@ Retrieve each file stored on the remote and restore it in the current directory.
 
 Arguments
   name  (optional) the name in .git/config of the server to store the data
+"
+;;
+
+init)
+echo "usage: git data init
+
+This command will set various options in your git repo and set up a .gitattributes
+file. To finish the setup you will want to run:
+
+  git config it config git-data.origin.url <server>
+
+Where server looks like one of these patterns:
+
+  <protocol>://<rsync server string>/<directory>/
+
+  or
+
+  s3://<bucket>/<path>/
 "
 ;;
 *)

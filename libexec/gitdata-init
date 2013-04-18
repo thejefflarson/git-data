@@ -6,4 +6,3 @@ git config filter.data.clean  "git-data filter-clean"
 git config filter.data.smudge "git-data filter-smudge"
 git config filter.data.required 'true'
 touch $(attributes)
-git add $(attributes)
