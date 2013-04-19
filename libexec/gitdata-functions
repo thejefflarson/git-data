@@ -113,7 +113,7 @@ make_bucket() {
        --header "Date: $date" \
        --header "Authorization: AWS $AWS_ACCESS_KEY_ID:$auth" \
        -f \
-       -# \
+       -s \
        -XPUT
 }
 
@@ -134,7 +134,7 @@ send_file_to_s3() {
        -XPUT \
        -f \
        --retry 3 \
-       -T $(object_dir)$sha
+       -T $(object_dir)$sha > /dev/null
 }
 
 put() {
