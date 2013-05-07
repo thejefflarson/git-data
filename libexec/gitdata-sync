@@ -13,7 +13,9 @@ do
   if [ "$(head -c 8 $file)" = 'git-data' ]
   then
     echo "grabbing $file"
-    cat $file | git data filter-smudge > $file
+    tmp=tmpfile
+    cat $file | git data filter-smudge > $tmp
+    mv $tmp $file
   fi
 done
 
