@@ -133,6 +133,7 @@ send_file_to_s3() {
        --header "Authorization: AWS $AWS_ACCESS_KEY_ID:$auth" \
        -XPUT \
        -f \
+       -# \
        --retry 3 \
        -T $(object_dir)$sha > /dev/null
 }
