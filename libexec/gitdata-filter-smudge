@@ -7,13 +7,16 @@ read file
 if [ "$(echo $file | head -c 8)" != 'git-data' ]
 then
   echo $file
-  exit
-fi
-
-sha=$(echo -e "$file" | cut -f2 -)
-if [ -z $(get_remote) ]
-then
-  exit 1
+  while read c
+  do
+    echo c
+  done  
 else
-  get $sha
+  sha=$(echo -e "$file" | cut -f2 -)
+  if [ -z $(get_remote) ]
+  then
+    exit 1
+  else
+    get $sha
+  fi
 fi
