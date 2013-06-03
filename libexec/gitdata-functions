@@ -122,7 +122,7 @@ send_file_to_s3() {
   local date=$(http_date)
   local size=`wc -c < $(object_dir)$sha`
 
-  local auth=$(sign_request "PUT\n\n\n$date\n/$bucket/$path$(file_name $sha)")
+  local auth=$(sign_request "PUT\n$md5\n\n$date\n/$bucket/$path$(file_name $sha)")
   curl https://s3.amazonaws.com/$path$(file_name $sha) \
        --header "Host: $bucket.s3.amazonaws.com" \
        --header "Date: $date" \

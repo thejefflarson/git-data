@@ -2,10 +2,7 @@
 . gitdata-functions
 
 tmp=$(tmpfile)
-while read line
-do
-  echo $line
-done >> $tmp
+cat > $tmp
 
 if [ "$(head -c 8 $tmp)" != 'git-data' ]
 then
