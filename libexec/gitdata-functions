@@ -94,10 +94,6 @@ get(){
 send_file() {
   local remote=$1
   local sha=$2
-  local server=$(echo $remote | cut -f 1 -d ":" - )
-  local path=$(echo $remote | cut -f 2 -d ":" - )
-
-  ssh $server "mkdir -p $path"
 
   rsync -z --progress $(object_dir)$sha $remote/"$(file_name $sha)"
 }

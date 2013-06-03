@@ -44,7 +44,7 @@ echo "usage: git data init
 This command will set various options in your git repo and set up a .gitattributes
 file. To finish the setup you will want to run:
 
-  git config it config git-data.origin.url <server>
+  git config git-data.origin.url <server>
 
 Where server looks like one of these patterns:
 
