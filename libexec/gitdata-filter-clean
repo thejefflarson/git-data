@@ -2,7 +2,7 @@
 . gitdata-functions
 
 tmp=$(tmpfile)
-cat > $tmp
+gzip -c > $tmp
 
 if [ "$(head -c 8 $tmp)" != 'git-data' ]
 then
