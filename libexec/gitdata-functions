@@ -120,13 +120,13 @@ send_file_to_s3() {
   [[ $url =~ s3:\/\/$bucket/(.*) ]]
   local path="${BASH_REMATCH[1]}"
   local date=$(http_date)
-  eval $(stat -s $(object_dir)$sha)
+  local size=`wc -c < $(object_dir)$sha`
 
   local auth=$(sign_request "PUT\n\n\n$date\n/$bucket/$path$(file_name $sha)")
   curl https://s3.amazonaws.com/$path$(file_name $sha) \
        --header "Host: $bucket.s3.amazonaws.com" \
        --header "Date: $date" \
-       --header "Content-Length: $st_size" \
+       --header "Content-Length: $size" \
        --header "Authorization: AWS $AWS_ACCESS_KEY_ID:$auth" \
        -XPUT \
        -f \
