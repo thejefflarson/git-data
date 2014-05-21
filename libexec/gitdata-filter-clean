@@ -6,11 +6,10 @@ cat > $tmp
 
 if [ "$(head -c 8 $tmp)" != 'git-data' ]
 then
-  gzip $tmp
   sha=$(git hash-object $tmp --no-filters)
-  mv $tmp.gz $(object_dir)/$sha
-  rm $tmp
-  rm $tmp.gz
+  gzip $tmp
+  gz="$tmp.gz"
+  mv $gz $(object_dir)/$sha
   echo -e "git-data\t$sha"
 else
   cat $tmp

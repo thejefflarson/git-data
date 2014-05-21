@@ -19,7 +19,7 @@ while (( "$#" ))
 do
   echo $1
   filter_and_replace $attrs $1
-  echo -e "$1\tfilter=data\t-crlf" >> $attrs
+  echo -e "$1\tfilter=data\tbinary" >> $attrs
   git add $1
   shift
 done
