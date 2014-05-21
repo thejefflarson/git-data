@@ -2,12 +2,15 @@
 . gitdata-functions
 
 tmp=$(tmpfile)
-gzip -c > $tmp
+cat > $tmp
 
 if [ "$(head -c 8 $tmp)" != 'git-data' ]
 then
+  gzip $tmp
   sha=$(git hash-object $tmp)
-  mv $tmp $(object_dir)/$sha
+  mv $tmp.gz $(object_dir)/$sha
+  rm $tmp
+  rm $tmp.gz
   echo -e "git-data\t$sha"
 else
   cat $tmp
