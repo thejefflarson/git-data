@@ -120,9 +120,11 @@ send_file_to_s3() {
   [[ $url =~ s3:\/\/$bucket/(.*) ]]
   local path="${BASH_REMATCH[1]}"
   local date=$(http_date)
-  local size=`wc -c < $(object_dir)$sha`
-
+  gzip $(object_dir)$sha
+  local gz=$(object_dir)"$sha.gz"
+  local size=`wc -c < $gz`
   local auth=$(sign_request "PUT\n$md5\n\n$date\n/$bucket/$path$(file_name $sha)")
+
   curl https://s3.amazonaws.com/$path$(file_name $sha) \
        --header "Host: $bucket.s3.amazonaws.com" \
        --header "Date: $date" \
@@ -132,7 +134,8 @@ send_file_to_s3() {
        -f \
        -# \
        --retry 3 \
-       -T $(object_dir)$sha > /dev/null
+       -T $gz > /dev/null
+  rm $gz
 }
 
 put() {
