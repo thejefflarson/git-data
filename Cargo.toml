@@ -1,0 +1,7 @@
+[package]
+name = "git-data"
+version = "0.1.0"
+authors = ["thejefflarson@gmail.com"]
+
+[dependencies]
+toml = "0.1.22"
