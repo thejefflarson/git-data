@@ -21,7 +21,6 @@ fn root_dir() -> String {
     String::from_utf8_lossy(&output.stdout).trim_right().to_string()
 }
 
-
 fn add(paths: &[String]) {
     let mut path = PathBuf::from(root_dir());
     path.push(".gitattributes");
@@ -38,7 +37,7 @@ fn add(paths: &[String]) {
     for path in paths {
         if contents.contains(path) { continue; }
         write!(attrs, "{}\tfilter=data\tbinary\n", path).ok();
-        Command::new("git").arg("add").arg("path").output().ok();
+        Command::new("git").arg("add").arg(path).output().ok();
     }
 }
 
