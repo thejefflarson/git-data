@@ -11,10 +11,11 @@ fn help() {
 
 fn root_dir() -> String {
     let output = Command::new("git")
-                   .arg("rev-parse")
-                   .arg("--show-toplevel")
-                   .output()
-                   .ok().expect("Error running git");
+                  .arg("rev-parse")
+                  .arg("--show-toplevel")
+                  .output()
+                  .ok()
+                  .expect("Error running git");
     if !output.status.success() {
         help();
     }
@@ -29,14 +30,16 @@ fn add(paths: &[String]) {
                      .read(true)
                      .write(true)
                      .create(true)
-                     .open(path).ok()
+                     .open(path)
+                     .ok()
                      .expect("Couldn't access .gitattributes file.");
 
     let mut contents = String::new();
     attrs.read_to_string(&mut contents).ok();
     for path in paths {
         if contents.contains(path) { continue; }
-        write!(attrs, "{}\tfilter=data\tbinary\n", path).ok();
+        write!(attrs, "{}\tfilter=data\tbinary\n", path).ok().expect("Couldn't write to .gitattributes.");
+        attrs.sync_data().ok();
         Command::new("git").arg("add").arg(path).output().ok();
     }
 }
