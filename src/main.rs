@@ -33,10 +33,13 @@ fn root_dir() -> String {
     String::from_utf8_lossy(&output.stdout).trim_right().to_string()
 }
 
-fn sign_request(request: String) -> String {
-  let r = &request.into_bytes();
-  let mut hmac = Hmac::new(Sha1::new(), r);
-  hmac.input(r);
+fn get_secret_key() -> String {
+  env::var("AWS_SECRET_ACCESS_KEY").ok().expect("You must set AWS_SECRET_ACCESS_KEY and AWS_ACCESS_KEY_ID to use s3 as an endpoint.")
+}
+
+fn sign_request(request: &str) -> String {
+  let mut hmac = Hmac::new(Sha1::new(), &get_secret_key().into_bytes());
+  hmac.input(request.as_bytes());
   hmac.result().code().to_base64(STANDARD)
 }
 
