@@ -1,9 +1,20 @@
+extern crate crypto;
+extern crate rustc_serialize;
+
+
 use std::env;
 use std::io::prelude::*;
 use std::process;
 use std::process::Command;
 use std::fs::OpenOptions;
 use std::path::PathBuf;
+
+use crypto::digest::Digest;
+use crypto::hmac::Hmac;
+use crypto::mac::Mac;
+use crypto::sha1::Sha1;
+
+use rustc_serialize::base64::{ToBase64, STANDARD};
 
 fn help() {
     process::exit(1)
@@ -20,6 +31,13 @@ fn root_dir() -> String {
         help();
     }
     String::from_utf8_lossy(&output.stdout).trim_right().to_string()
+}
+
+fn sign_request(request: String) -> String {
+  let r = &request.into_bytes();
+  let mut hmac = Hmac::new(Sha1::new(), r);
+  hmac.input(r);
+  hmac.result().code().to_base64(STANDARD)
 }
 
 fn add(paths: &[String]) {
