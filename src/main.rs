@@ -5,7 +5,7 @@ use std::env;
 use std::fmt;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
-use std::path;
+use std::path::{Path, PathBuf};
 use std::process;
 use std::process::Command;
 
@@ -20,10 +20,10 @@ fn help() {
     process::exit(1)
 }
 
-fn git_cmd(args: &[str], mess: &str) -> String {
-    let cmd = Command::new("git");
+fn git_cmd(args: Vec<&str>, mess: &str) -> String {
+    let mut cmd = Command::new("git");
     for arg in args {
-        cmd.add(arg);
+        cmd.arg(arg);
     }
     let output = cmd.output().ok().expect(mess);
     String::from_utf8_lossy(&output.stdout).trim_right().to_string()
@@ -44,7 +44,7 @@ fn git_dir() -> String {
 }
 
 fn object_dir() -> PathBuf {
-    Path::new(root_dir()).join(git_dir())
+    Path::new(&root_dir()).join(&git_dir())
 }
 
 fn get_secret_key() -> String {
