@@ -2,7 +2,6 @@ extern crate crypto;
 extern crate rustc_serialize;
 
 use std::env;
-use std::fmt;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
@@ -21,26 +20,22 @@ fn help() {
 }
 
 fn git_cmd(args: Vec<&str>, mess: &str) -> String {
-    let mut cmd = Command::new("git");
-    for arg in args {
-        cmd.arg(arg);
-    }
-    let output = cmd.output().ok().expect(mess);
+    let output = Command::new("git")
+                     .args(&args)
+                     .output()
+                     .ok()
+                     .expect(mess);
     String::from_utf8_lossy(&output.stdout).trim_right().to_string()
 }
 
 fn root_dir() -> String {
-    git_cmd(vec![
-        "rev-parse",
-        "--show-toplevel"
-    ], "Error running git, are you sure this is a git repo?")
+    git_cmd(vec!["rev-parse", "--show-toplevel"],
+            "Error running git, are you sure this is a git repo?")
 }
 
 fn git_dir() -> String {
-    git_cmd(vec![
-        "rev-parse",
-        "--git-dir"
-    ], "Error running git, are you sure this is a git repo?")
+    git_cmd(vec!["rev-parse", "--git-dir"],
+            "Error running git, are you sure this is a git repo?")
 }
 
 fn object_dir() -> PathBuf {
@@ -48,7 +43,10 @@ fn object_dir() -> PathBuf {
 }
 
 fn get_secret_key() -> String {
-    env::var("AWS_SECRET_ACCESS_KEY").ok().expect("You must set AWS_SECRET_ACCESS_KEY and AWS_ACCESS_KEY_ID to use s3 as an endpoint.")
+    env::var("AWS_SECRET_ACCESS_KEY")
+        .ok()
+        .expect("You must set AWS_SECRET_ACCESS_KEY and AWS_ACCESS_KEY_ID to use s3 as an \
+                 endpoint.")
 }
 
 fn sign_request(request: &str) -> String {
@@ -62,18 +60,22 @@ fn add(paths: &[String]) {
     path.push(".gitattributes");
     println!("{:?}", path);
     let mut attrs = OpenOptions::new()
-                     .read(true)
-                     .write(true)
-                     .create(true)
-                     .open(path)
-                     .ok()
-                     .expect("Couldn't access .gitattributes file.");
+                        .read(true)
+                        .write(true)
+                        .create(true)
+                        .open(path)
+                        .ok()
+                        .expect("Couldn't access .gitattributes file.");
 
     let mut contents = String::new();
     attrs.read_to_string(&mut contents).ok();
     for path in paths {
-        if contents.contains(path) { continue; }
-        write!(attrs, "{}\tfilter=data\tbinary\n", path).ok().expect("Couldn't write to .gitattributes.");
+        if contents.contains(path) {
+            continue;
+        }
+        write!(attrs, "{}\tfilter=data\tbinary\n", path)
+            .ok()
+            .expect("Couldn't write to .gitattributes.");
         attrs.sync_data().ok();
         Command::new("git").arg("add").arg(path).output().ok();
     }
@@ -97,13 +99,15 @@ fn sync() {
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    if args.len() < 2 { help(); }
+    if args.len() < 2 {
+        help();
+    }
     match args[1].as_ref() {
         "add" => add(&args[2..]),
         "filter-clean" => clean(),
         "filter-smudge" => smudge(),
         "init" => init(),
         "sync" => sync(),
-        _ => help()
+        _ => help(),
     }
 }
