@@ -3,15 +3,17 @@ extern crate rustc_serialize;
 
 use std::env;
 use std::fs::OpenOptions;
+use std::io;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 use std::process;
-use std::process::Command;
+use std::process::{Command, Stdio};
 
 use crypto::digest::Digest;
 use crypto::hmac::Hmac;
 use crypto::mac::Mac;
 use crypto::sha1::Sha1;
+
 
 use rustc_serialize::base64::{ToBase64, STANDARD};
 
@@ -82,7 +84,13 @@ fn add(paths: &[String]) {
 }
 
 fn clean() {
-    println!("clean!")
+    Command::new("git")
+             .args(&vec!["hash-object", "--stdin"])
+             .stdin(Stdio::inherit())
+             .stdout(Stdio::inherit())
+             .spawn()
+             .ok()
+             .expect("error running git hash-object");
 }
 
 fn smudge() {
