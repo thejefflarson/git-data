@@ -14,7 +14,6 @@ use crypto::hmac::Hmac;
 use crypto::mac::Mac;
 use crypto::sha1::Sha1;
 
-
 use rustc_serialize::base64::{ToBase64, STANDARD};
 
 fn help() {
@@ -85,12 +84,12 @@ fn add(paths: &[String]) {
 
 fn clean() {
     Command::new("git")
-             .args(&vec!["hash-object", "--stdin"])
-             .stdin(Stdio::inherit())
-             .stdout(Stdio::inherit())
-             .spawn()
-             .ok()
-             .expect("error running git hash-object");
+        .args(&vec!["hash-object", "--stdin"])
+        .stdin(Stdio::inherit())
+        .stdout(Stdio::inherit())
+        .spawn()
+        .ok()
+        .expect("error running git hash-object");
 }
 
 fn smudge() {
