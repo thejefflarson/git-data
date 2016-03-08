@@ -1,9 +1,11 @@
 [package]
+authors = ["thejefflarson@gmail.com"]
 name = "git-data"
 version = "0.1.0"
-authors = ["thejefflarson@gmail.com"]
 
 [dependencies]
-toml = "0.1.22"
-rust-crypto = "*"
-rustc-serialize = "0.3"
+flate2 = "0.2.13"
+
+[dependencies.rusoto]
+features = ["s3"]
+version = "0.12.1"

@@ -1,5 +1,4 @@
-extern crate crypto;
-extern crate rustc_serialize;
+extern crate rusoto;
 
 use std::env;
 use std::fs::OpenOptions;
@@ -41,19 +40,6 @@ fn git_dir() -> String {
 
 fn object_dir() -> PathBuf {
     Path::new(&root_dir()).join(&git_dir())
-}
-
-fn get_secret_key() -> String {
-    env::var("AWS_SECRET_ACCESS_KEY")
-        .ok()
-        .expect("You must set AWS_SECRET_ACCESS_KEY and AWS_ACCESS_KEY_ID to use s3 as an \
-                 endpoint.")
-}
-
-fn sign_request(request: &str) -> String {
-    let mut hmac = Hmac::new(Sha1::new(), &get_secret_key().into_bytes());
-    hmac.input(request.as_bytes());
-    hmac.result().code().to_base64(STANDARD)
 }
 
 fn add(paths: &[String]) {
