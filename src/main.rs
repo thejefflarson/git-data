@@ -45,7 +45,6 @@ fn object_dir() -> PathBuf {
 fn add(paths: &[String]) {
     let mut path = PathBuf::from(root_dir());
     path.push(".gitattributes");
-    println!("{:?}", path);
     let mut attrs = OpenOptions::new()
                         .read(true)
                         .write(true)
