@@ -14,8 +14,6 @@ file_name() {
   echo "git-data-$sha"
 }
 
-# http://docs.amazonwebservices.com/AmazonS3/latest/dev/RESTAuthentication.html
-
 tmpfile(){
   echo $(mktemp git-data.XXXXXXXXX)
 }
@@ -35,7 +33,6 @@ object_dir(){
 attributes(){
   echo $(root_dir)/.gitattributes
 }
-
 
 get_file_from_s3() {
   local remote=$1
