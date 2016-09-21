@@ -37,18 +37,11 @@ attributes(){
 }
 
 
-get_file() {
-  local remote=$1
-  local sha=$2
-
-  rsync -z --progress $remote/"$(file_name $sha)"
-}
-
 get_file_from_s3() {
   local remote=$1
   local sha=$2
 
-  aws s3 cp $remote/$(file_name $sha)
+  aws s3 cp $remote/$(file_name $sha) -
 }
 
 get(){
@@ -59,12 +52,7 @@ get(){
   then
     cat $(object_dir)/$sha
   else
-    if [[ $remote =~ ^s3:\/\/ ]]
-    then
-      get_file_from_s3 $remote $sha
-    else
-      get_file $remote $sha
-    fi
+    get_file_from_s3 $remote $sha
   fi
 }
 
@@ -90,10 +78,5 @@ put() {
   local sha=$1
   local remote=$(get_remote $2)
 
-  if [[ $remote =~ ^s3:\/\/ ]]
-  then
-    send_file_to_s3 $remote $sha
-  else
-    send_file $remote $sha
-  fi
+  send_file_to_s3 $remote $sha
 }
