@@ -1,22 +1,14 @@
 extern crate rusoto;
-
 use std::env;
 use std::fs::OpenOptions;
-use std::io;
 use std::io::prelude::*;
+use std::io::{stdin, stdout, Write, Read};
+//{stdin, stdout, Write, Read};
 use std::path::{Path, PathBuf};
-use std::process;
-use std::process::{Command, Stdio};
-
-use crypto::digest::Digest;
-use crypto::hmac::Hmac;
-use crypto::mac::Mac;
-use crypto::sha1::Sha1;
-
-use rustc_serialize::base64::{ToBase64, STANDARD};
+use std::process::{Command, Stdio, exit};
 
 fn help() {
-    process::exit(1)
+    exit(1)
 }
 
 fn git_cmd(args: Vec<&str>, mess: &str) -> String {
@@ -78,7 +70,12 @@ fn clean() {
 }
 
 fn smudge() {
-    println!("smudge!")
+    let slice = [0; 8];
+    let header = stdin.read_exact(slice);
+    if slice == &"git-data" {
+       stdout().write(&slice).unwrap_or_else(|e| { exit(1) });
+    }
+
 }
 
 fn init() {

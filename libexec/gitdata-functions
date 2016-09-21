@@ -17,9 +17,11 @@ file_name() {
 # http://docs.amazonwebservices.com/AmazonS3/latest/dev/RESTAuthentication.html
 sign_request() {
   local sign=$1
-  if [ -z $AWS_SECRET_ACCESS_KEY ] && [ -z $AWS_ACCESS_KEY_ID ]
+  local secret_key=$(aws configure get aws_secret_access_key)
+  local access_key=$(aws configure get aws_access_key_id)
+  if [ -z $secret_key ] && [ -z $access_key ]
   then
-    echo "You must set AWS_SECRET_ACCESS_KEY and AWS_ACCESS_KEY_ID to use s3 as an endpoint."
+    echo "You must set up the aws cli."
     exit 1
   fi
   echo "$( echo -en $sign | openssl dgst -sha1 -binary -hmac $AWS_SECRET_ACCESS_KEY  | openssl base64 )"
