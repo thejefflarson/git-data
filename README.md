@@ -1,4 +1,2 @@
-git-data
-========
-
-Simple git data management
+<?xml version="1.0" encoding="UTF-8"?>
+<Error><Code>InvalidAccessKeyId</Code><Message>The AWS Access Key Id you provided does not exist in our records.</Message><AWSAccessKeyId></AWSAccessKeyId><RequestId>503E2C5E89D1159F</RequestId><HostId>+L77sPiMXTFWbUJVGJjY12gC3/YOOtHcnKLUITq2L7qc68p6fPVmz4TG7l1s6M8ZspIEQh6EAlg=</HostId></Error>

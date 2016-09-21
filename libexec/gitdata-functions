@@ -15,24 +15,9 @@ file_name() {
 }
 
 # http://docs.amazonwebservices.com/AmazonS3/latest/dev/RESTAuthentication.html
-sign_request() {
-  local sign=$1
-  local secret_key=$(aws configure get aws_secret_access_key)
-  local access_key=$(aws configure get aws_access_key_id)
-  if [ -z $secret_key ] && [ -z $access_key ]
-  then
-    echo "You must set up the aws cli."
-    exit 1
-  fi
-  echo "$( echo -en $sign | openssl dgst -sha1 -binary -hmac $AWS_SECRET_ACCESS_KEY  | openssl base64 )"
-}
 
 tmpfile(){
   echo $(mktemp git-data.XXXXXXXXX)
-}
-
-http_date() {
-  echo $(LC_TIME=C TZ=utc date "+%a, %d %h %Y %T %z")
 }
 
 git_dir(){
@@ -63,17 +48,7 @@ get_file_from_s3() {
   local remote=$1
   local sha=$2
 
-
-  [[ $remote =~ s3:\/\/(.*) ]]
-  local path="${BASH_REMATCH[1]}"
-  local date=$(http_date)
-  local auth=$(sign_request "GET\n\n\n$date\n/$path$(file_name $sha)")
-
-  curl https://s3.amazonaws.com/$path$(file_name $sha) \
-       --header "Host: $bucket.s3.amazonaws.com" \
-       --header "Date: $date" \
-       --header "Authorization: AWS $AWS_ACCESS_KEY_ID:$auth" \
-       -#
+  aws s3 cp $remote/$(file_name $sha)
 }
 
 get(){
@@ -100,43 +75,14 @@ send_file() {
   rsync -z --progress $(object_dir)$sha $remote/"$(file_name $sha)"
 }
 
-make_bucket() {
-  local bucket=$1
-  local date=$(http_date)
-  local auth=$(sign_request "PUT\n\n\n$date\n/$bucket/")
-
-  curl https://s3.amazonaws.com/ \
-       --header "Host: $bucket.s3.amazonaws.com" \
-       --header "Date: $date" \
-       --header "Authorization: AWS $AWS_ACCESS_KEY_ID:$auth" \
-       -f \
-       -s \
-       -XPUT
-}
-
 send_file_to_s3() {
   local url=$1
   local sha=$2
-  local bucket=$(echo $url | cut -f 3 -d '/' -)
-  make_bucket $bucket
-  [[ $url =~ s3:\/\/$bucket/(.*) ]]
-  local path="${BASH_REMATCH[1]}"
-  local date=$(http_date)
-  gzip $(object_dir)$sha
-  local gz=$(object_dir)"$sha.gz"
-  local size=`wc -c < $gz`
-  local auth=$(sign_request "PUT\n$md5\n\n$date\n/$bucket/$path$(file_name $sha)")
 
-  curl https://s3.amazonaws.com/$path$(file_name $sha) \
-       --header "Host: $bucket.s3.amazonaws.com" \
-       --header "Date: $date" \
-       --header "Content-Length: $size" \
-       --header "Authorization: AWS $AWS_ACCESS_KEY_ID:$auth" \
-       -XPUT \
-       -f \
-       -# \
-       --retry 3 \
-       -T $gz > /dev/null
+  local gz=$(object_dir)"$sha.gz"
+  gzip $(object_dir)$sha
+
+  aws s3 cp $gz $url/$(file_name $sha)
   rm $gz
 }
 
